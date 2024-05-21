@@ -31,8 +31,10 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // oauth
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -41,6 +43,15 @@ dependencies {
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+	
+	 // thymeleaf layout dialect
+	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.1.0'
+	
+	// spring security taglib 지원성 추가
+	implementation 'org.springframework.security:spring-security-taglibs'
+	
+	// 추가
+	implementation 'org.springframework.session:spring-session-jdbc' // 추가
 	
 	// log4j2
 	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
@@ -66,7 +77,17 @@ dependencies {
 	// koalanlp
 	// http://koalanlp.github.io/koalanlp
 	implementation 'kr.bydelta:koalanlp-okt:2.1.4'
-	
+	// webjars javascript 자동 버전 관리
+    implementation group: 'org.webjars', name: 'webjars-locator-core', version: '0.46'
+
+		 // jQuery
+    implementation 'org.webjars:jquery:3.7.1'
+    
+    // jQueryUI
+    implementation 'org.webjars:jquery-ui:1.12.1'
+    
+    // bootstrap
+    implementation 'org.webjars:bootstrap:5.3.1'
 }
 
 tasks.named('bootBuildImage') {
