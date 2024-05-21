@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<!-- thymeleaf dialect -->
+<html lang="ko-kr" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>Regna Bootstrap Template</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link th:href="@{/img/favicon.png}" rel="icon">
+  <link th:href="@{/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Poppins:300,400,500,700" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link th:href="@{/vendor/aos/aos.css}" rel="stylesheet">
+  <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+  <link th:href="@{/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+  <link th:href="@{/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
+  <link th:href="@{/vendor/swiper/swiper-bundle.min.css}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link th:href="@{/css/style.css}" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: Regna
+  * Template URL: https://bootstrapmade.com/regna-bootstrap-onepage-template/
+  * Updated: Mar 17 2024 with Bootstrap v5.3.3
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+
+<style type="text/css">
+.top_search_box{
+	height: 300px;
+	width:700px;
+	background-color: #fff;
+	display: inline-block;
+}
+
+</style>
+
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center header-transparent">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div id="logo">
+        <a th:href="@{/}"><img th:src="@{/img/logo.png}" alt=""></a>
+        <!-- Uncomment below if you prefer to use a text logo -->
+        <!--<h1><a th:href="@{/index.html}">Regna</a></h1>-->
+      </div>
+      
+	  <span sec:authorize="isAuthenticated()" th:utext="${'<b>' + #authentication.principal.attributes.email} + '</b> 님 환영합니다.'" style="color:#fff;"></span>
+      
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" th:href="@{/#hero}">메인화면</a></li>
+          <li><a class="nav-link scrollto" th:href="@{/#about}">리뷰게시판</a></li>
+          <li><a class="nav-link scrollto" th:href="@{/#services}">마이페이지</a></li>
+          <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
+            <ul>
+              <li><a href="#">Drop Down 1</a></li>
+              <li class="dropdown"><a href="#"><span>마이페이지</span> <i class="bi bi-chevron-right"></i></a>
+                <ul>
+                  <li><a href="#">내정보조회</a></li>
+                  <li><a href="#">나의 예약현황</a></li>
+                  <li><a href="#">내 정보 수정</a></li>
+                  <li><a href="#">내가 본 캠핑장</a></li>
+                </ul>
+              </li>
+              <li><a href="#">Drop Down 2</a></li>
+              <li><a href="#">Drop Down 3</a></li>
+              <li><a href="#">Drop Down 4</a></li>
+            </ul>
+          </li>
+          <li sec:authorize="isAnonymous()" ><a class="btn btn-secondary active m-2" role="button" th:href="@{/login/oauth2/authorization/naver}">로그인</a></li>
+          <li sec:authorize="isAuthenticated()"><a class="btn btn-secondary active m-2" role="button" th:href="@{'/logout'}">로그아웃</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+    </div>
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+    <div class="hero-container" data-aos="zoom-in" data-aos-delay="100">
+      <h1>캠핑장 검색하기</h1>
+      <div class="w-50 h-25 bg-info">
+     	 <nav class="navbar">
+		  <div class="container-fluid">
+		    <form class="d-flex" role="search">
+		      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+		      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+		      <!-- <button class="btn btn-outline-success" type="submit">Search</button> -->
+		    </form>
+		  </div>
+		</nav>
+      </div>
+      <!-- <h2>We are team of talented designers making websites with Bootstrap</h2> -->
+     <!--  <a th:href="@{/#about}" class="btn-get-started">Get Started</a> -->
+    </div>
+  </section><!-- End Hero Section -->
+
+  <main id="main">
+  
+  <!-- 권한 점검 -->
+	<div sec:authorize="isAnonymous()" class="m-2">
+	  - 권한(Role) : Anonymous (로그인 되지 않은 상태, 로그아웃)
+	</div>
+
+	<div sec:authorize="hasRole('ROLE_GUEST')" class="m-2">
+	  - 권한(Role) : ROLE_GUEST
+	</div>
+	
+	<div sec:authorize="hasRole('ROLE_USER')" class="m-2">
+	  - 권한(Role) : ROLE_USER
+	</div>
+
+    <!-- ======= About Section ======= -->
+    <section id="about">
+    
+    <div sec:authorize="hasRole('ROLE_GUEST')">
+	  <b>- 권한(Role) :</b> [[${#authentication.principal.authorities[0]}]]
+	</div>
+	
+	<div sec:authorize="hasRole('ROLE_USER')">
+	  <b>- 권한(Role) :</b> ROLE_USER
+	</div>
+		
+	<hr>
+	
+	<!-- Pricipal -->
+	<div th:text="${#authentication}">
+	  The value of the "name" property of the authentication object should appear here.
+	</div>
+	
+	<hr>
+
+	<!-- Principal Name-->
+	<div th:utext="${'<b>아이디 : </b>' + #authentication.name}">
+	  The value of the "name" property of the authentication object should appear here.
+	</div>
+      <div class="container" data-aos="fade-up">
+        <div class="row about-container">
+
+          <div class="col-lg-6 content order-lg-1 order-2">
+            <h2 class="title">Few Words About Us</h2>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+
+            <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
+              <div class="icon"><i class="bi bi-briefcase"></i></div>
+              <h4 class="title"><a href="">Eiusmod Tempor</a></h4>
+              <p class="description">Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi</p>
+            </div>
+
+            <div class="icon-box" data-aos="fade-up" data-aos-delay="200">
+              <div class="icon"><i class="bi bi-card-checklist"></i></div>
+              <h4 class="title"><a href="">Magni Dolores</a></h4>
+              <p class="description">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum</p>
+            </div>
+
+            <div class="icon-box" data-aos="fade-up" data-aos-delay="300">
+              <div class="icon"><i class="bi bi-binoculars"></i></div>
+              <h4 class="title"><a href="">Dolor Sitema</a></h4>
+              <p class="description">Minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat tarad limino ata</p>
+            </div>
+
+          </div>
+
+          <div class="col-lg-6 background order-lg-2 order-1" data-aos="fade-left" data-aos-delay="100"></div>
+        </div>
+
+      </div>
+    </section><!-- End About Section -->
+
+    <!-- ======= Facts Section ======= -->
+    <section id="facts">
+      <div class="container" data-aos="fade-up">
+        <div class="section-header">
+          <h3 class="section-title">Facts</h3>
+          <p class="section-description">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque</p>
+        </div>
+        <div class="row counters">
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-purecounter-start="0" data-purecounter-end="232" data-purecounter-duration="1" class="purecounter"></span>
+            <p>Clients</p>
+          </div>
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-purecounter-start="0" data-purecounter-end="534" data-purecounter-duration="1" class="purecounter"></span>
+            <p>Projects</p>
+          </div>
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-purecounter-start="0" data-purecounter-end="1463" data-purecounter-duration="1" class="purecounter"></span>
+            <p>Hours Of Support</p>
+          </div>
+
+          <div class="col-lg-3 col-6 text-center">
+            <span data-purecounter-start="0" data-purecounter-end="42" data-purecounter-duration="1" class="purecounter"></span>
+            <p>Hard Workers</p>
+          </div>
+
+        </div>
+
+      </div>
+    </section><!-- End Facts Section -->
+
+   
+  </main><!-- End #main -->
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="footer-top">
+      <div class="container">
+
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="copyright">
+        &copy; Copyright <strong>Regna</strong>. All Rights Reserved
+      </div>
+      <div class="credits">
+        <!--
+        All the links in the footer should remain intact.
+        You can delete the links only if you purchased the pro version.
+        Licensing information: https://bootstrapmade.com/license/
+        Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/buy/?theme=Regna
+      -->
+        Designed by <a th:href="@{/https://bootstrapmade.com/}">BootstrapMade</a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script th:src="@{/vendor/purecounter/purecounter_vanilla.js}"></script>
+  <script th:src="@{/vendor/aos/aos.js}"></script>
+  <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/vendor/glightbox/js/glightbox.min.js}"></script>
+  <script th:src="@{/vendor/isotope-layout/isotope.pkgd.min.js}"></script>
+  <script th:src="@{/vendor/swiper/swiper-bundle.min.js}"></script>
+  <script th:src="@{/vendor/php-email-form/validate.js}"></script>
+
+  <!-- Template Main JS File -->
+  <script th:src="@{/js/main.js}"></script>
+
+</body>
+
+</html>
