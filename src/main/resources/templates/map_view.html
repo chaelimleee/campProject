@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html 
+		xmlns:th="http://www.thymeleaf.org"
+		xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head>
+	<meta charset="utf-8"/>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>Kakao 지도 시작하기</title>
+	<meta content="" name="description">
+	<meta content="" name="keywords">
+
+	<!-- Favicons -->
+	<link th:href="@{/img/campIcon.png}" rel="icon">
+	<link th:href="@{/img/apple-touch-icon.png}" rel="apple-touch-icon">
+	
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Poppins:300,400,500,700" rel="stylesheet">
+	
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Noto+Sans+KR:wght@100..900&display=swap" rel="stylesheet">	
+	
+	<!-- Google Icon : https://material.io/tools/icons/?style=baseline -->
+  	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	
+	<!-- Vendor CSS Files -->
+	<link th:href="@{/vendor/aos/aos.css}" rel="stylesheet">
+	<link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+	<link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+	<link th:href="@{/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+	<link th:href="@{/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
+	<link th:href="@{/vendor/swiper/swiper-bundle.min.css}" rel="stylesheet">
+
+	
+	<script th:src="@{/vendor/bootstrap/js/bootstrap.min.js}"></script>
+	
+	<link th:href="@{/css/modal.css}" rel="stylesheet">
+	<!-- Template Main CSS File -->
+	<link th:href="@{/css/style.css}" rel="stylesheet">
+	
+	<style type="text/css">
+		#map,#recommList,#recommCamp{
+			margin:0 auto;
+		}
+		
+		#campTitle{
+			  font-family: "Black Han Sans", sans-serif;
+			  font-weight: 400;
+			  font-style: normal;	
+			  text-shadow: 5px 5px gray;
+			  font-size: 70px;
+			  width:1000px; 
+			  height:80px;
+			  color:#fff;
+			  margin-left:30px;
+		}
+	</style>
+</head>
+<body>
+
+<!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center header-transparent">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div id="logo">
+        <a th:href="@{/}"><img th:src="@{/img/canpIcon2.png}" alt=""></a>
+        <!-- Uncomment below if you prefer to use a text logo -->
+        <!--<h1><a th:href="@{/index.html}">Regna</a></h1>-->
+      </div>
+      
+	  <span sec:authorize="isAuthenticated()" th:utext="${'<b>' + #authentication.principal.attributes.email} + '</b> 님 환영합니다.'" style="color:#fff;"></span>
+      
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" th:href="@{/}">메인화면</a></li>
+          <li><a class="nav-link scrollto" th:href="@{/board/list.do}">리뷰게시판</a></li>
+          <li><a class="nav-link scrollto" th:href="@{/#services}">예약현황</a></li>
+          <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
+            <ul>
+              <li><a href="#">Drop Down 1</a></li>
+              <li class="dropdown"><a href="#"><span>예약현황</span> <i class="bi bi-chevron-right"></i></a>
+                <ul>
+                  <li><a href="#">내정보조회</a></li>
+                  <li><a href="#">나의 예약현황</a></li>
+                  <li><a href="#">내 정보 수정</a></li>
+                  <li><a href="#">내가 본 캠핑장</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li sec:authorize="isAnonymous()" ><a class="btn btn-secondary active m-2" role="button" th:href="@{/login/oauth2/authorization/naver}">로그인</a></li>
+          <li sec:authorize="isAuthenticated()"><a class="btn btn-secondary active m-2" role="button" th:href="@{'/logout'}">로그아웃</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+    </div>
+  </header><!-- End Header -->
+
+<!-- ======= Hero Section ======= -->
+  <section id="maphero">
+  
+	    <div class="d-flex align-items-center" style="margin:120px 30px 20px 30px;flex-direction: column;" th:each="camp: ${campList}">
+	    
+		    <div class="item d-flex align-self-start shadow bg-light bg-opacity-25 rounded-3" style="height:210px;margin:20px 20px 10px 20px;padding:10px;">
+				
+				<div class="vr border" style="width:5px;background-color: #ffffff;"></div>
+		    	&nbsp;&nbsp;&nbsp;
+		    	<!-- 캠핑장 이름 -->
+				<div id="campTitle" class="item d-flex align-self-start">
+					 <p th:text="${campTitle}"></p>
+				</div>
+			
+			</div>
+			
+   		 </div>
+    
+  </section><!-- End Hero Section -->
+	
+	<main id="main" style="min-height:1200px;">
+	
+	  	<div class="d-flex justify-content-center flex-wrap" 
+	  		 style="min-height:0px; width: 80%; margin:20px auto;"
+	  		 th:each="camp: ${campList}">
+	  		 
+	  		<!-- 캠핑장 썸네일 이미지 -->
+			<img th:if="${camp.campImg != null}" th:src="@{'/img/thumb/' + ${camp.campImg}}" class="item d-flex justify-content-start rounded"
+				 style="width:700px; height:500px; margin:30px;"/>
+
+			<img th:if="${camp.campImg == null}" th:src="@{/img/camp_blank_img.png}" class="item d-flex justify-content-start rounded"
+				 style="width:700px; height:500px; margin:30px;"/>
+	  		
+	  		<!-- 상세페이지 메인 영역 시작 -->
+	  		<div style="width:600px;height:600px;overflow:hidden;margin-top:17px;">
+				<hr class="border border-danger border-2 opacity-50">
+		  		<div style="margin:30px;" th:each="camp: ${campList}">
+					
+					<table class="table">
+						<colgroup>
+							<col style="width: 30%;">
+							<col style="width: 70%;">
+						</colgroup>
+						<tbody>
+							<tr>
+								<th scope="col">주소</th>
+								<td th:text="${camp.roadAddress == null ? camp.jibunAddress : camp.roadAddress}"></td>
+							</tr>
+							<tr class="camp_call_pcVer">
+								<th scope="col">문의처</th>
+								<td th:text="${camp.phone}"></td>
+							</tr>
+							<tr>
+								<th scope="col">캠핑장 환경</th>
+								<td>산, 숲 / 민간</td>
+							</tr>
+							<tr>
+								<th scope="col">캠핑장 유형</th>
+								<td th:text="${camp.cate3}"></td>
+							</tr>
+							<tr>
+								<th scope="col">운영기간</th>
+								<td>봄, 여름, 가을, 겨울</td>
+							</tr>
+							<tr>
+								<th scope="col">운영일</th>
+									<td class="row">
+										<span class="col-4" th:text="${camp.weekdayOpStatus}"></span>
+						 				<span class="col-4" th:text="${camp.weekendOpStatus}"></span>
+									</td>
+								</tr>
+							<tr>
+									<th scope="col">홈페이지</th>
+									<td>
+										<a th:if="${#strings.contains(camp.homepage,'http') == true}" th:href="${camp.homepage}" target="_BLANK" title="새창열림">홈페이지 바로가기</a>
+										<span th:if="${#strings.contains(camp.homepage,'http') == false}">정보없음</span>
+									</td>
+								</tr>
+							<tr>
+									<th scope="col">주변이용가능시설</th>
+									<td>산책로, 낚시, 강/물놀이, 청소년체험시설</td>
+								</tr>
+							</tbody>
+					</table>
+					
+					<div class="row d-flex justify-content-center">
+					
+							<a th:href="@{'/reservation.do?camp_name='+ ${campTitle} +'&camp_id=' + ${campId} +'&email=' + ${#authentication.principal.attributes.email}}" class="btn btn-outline-warning d-flex justify-content-center ms-4 me-4 col-5" role="button" 
+							   style="width:200px;height:40px;font-size:20px;">
+									예약하기
+							</a>
+							
+							<a th:href="@{/map_view.do}" class="btn btn-outline-warning d-flex justify-content-center me-4 col-5" role="button" 
+							   style="width:200px;height:40px;font-size:20px;">
+									리뷰게시판
+							</a>
+					
+					</div>
+		  		</div>
+			</div>
+			
+		    	<!-- 캠핑장 상세 이미지 3개. -->
+				<div class="d-flex justify-content-center" style="width:1300px;height:350px;"th:each="camp: ${campByIdList}">
+  				  		
+				    	<!-- 캠핑장 상세 이미지1 -->
+  				  		<img th:src="@{'/thumb_sub4_ext/' + ${camp.ImgName1}}" class="float-start rounded"
+  				  			 style="width:400px; height:300px;"/>
+				    	
+				    	<!-- 캠핑장 상세 이미지2 -->
+  				  		<img th:src="@{'/thumb_sub4_ext/' + ${camp.ImgName2}}" class="mx-auto d-block rounded"
+  				  			 style="width:400px; height:300px;"/>
+				    	
+				    	<!-- 캠핑장 상세 이미지3 -->
+  				  		<img th:src="@{'/thumb_sub4_ext/' + ${camp.ImgName3}}" class="float-end rounded"
+  				  			 style="width:400px; height:300px;"/>
+				</div>
+				
+				<div th:each="camp: ${campList}" style="margin:10px 0 70px 0;">
+				
+					<hr class="border border-success border-2 opacity-50">
+					<!-- 캠핑장 설명 -->
+					<div class="itemd-flex justify-content-end" 
+						 style="width:1300px; min-height:110px;font-size:17px;margin-bottom:30px;">
+						 <p th:text="${camp.facilDetail}"></p>
+					</div>
+					<hr class="border border-success border-2 opacity-50">
+				</div>
+				
+				<div style="margin:10px 0 70px 0;">
+					<!-- 캠핑장 리뷰 -->
+					
+					<table class="table table-hover"style="width:1300px;font-size:17px;">
+					
+						<thead>
+						  <tr>
+						    <th scope="col">리뷰내용</th>
+						  </tr>
+						</thead>
+						
+						<tbody>
+						  <tr th:if="${#lists.size(campReviewList) > 0}" th:each="review: ${campReviewList}">
+						    <td th:text="${review.reviews}"></td>
+						  </tr>
+
+						  <tr th:if="${#lists.isEmpty(campReviewList)}">
+						    <td style="text-align:center;padding:20px;">작성된 리뷰가 없습니다.</td>
+						  </tr>
+
+						  <tr th:if="${#lists.size(campReviewList) > 0}">
+						  	<td style="font-size:30px;text-align:center;"><b>. . .</b></td>
+						  </tr>
+						</tbody>
+					</table>
+										
+				</div>
+
+		</div>
+		<!--// 상세페이지 메인 영역 끝 -->
+  		
+	</main>
+	
+	<!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="footer-top">
+      <div class="container">
+
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="copyright">
+        &copy; Copyright <strong>Regna</strong>. All Rights Reserved
+      </div>
+      <div class="credits">
+        Designed by <a th:href="@{/https://bootstrapmade.com/}">BootstrapMade</a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+  
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script th:src="@{/vendor/purecounter/purecounter_vanilla.js}"></script>
+  <script th:src="@{/vendor/aos/aos.js}"></script>
+  <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/vendor/glightbox/js/glightbox.min.js}"></script>
+  <script th:src="@{/vendor/isotope-layout/isotope.pkgd.min.js}"></script>
+  <script th:src="@{/vendor/swiper/swiper-bundle.min.js}"></script>
+  <script th:src="@{/vendor/php-email-form/validate.js}"></script>
+
+  <!-- Template Main JS File -->
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

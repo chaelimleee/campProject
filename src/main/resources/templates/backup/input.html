@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+window.onload = function() {
+
+	let latitude = document.getElementById("latitude");
+	let longitude = document.getElementById("longitude");
+
+	axios({
+	  method: 'get',
+	  url: '/campingCrawlTest/receive.do',
+	  data : {
+		  latitude : latitude.value,
+		  longitude : longitude.value
+	  	}
+	})
+	  .then(function (response) {
+	   response.data
+	});
+
+} // onload
+</script>
+</head>
+<body>
+
+	<input type="text" id="latitude" name="latitude" />
+	<input type="text" id="longitude" name="longitude" />
+	<button id="btn">전송</button>
+</body>
+</html>

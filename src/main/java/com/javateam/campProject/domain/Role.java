@@ -1,16 +1,47 @@
 package com.javateam.campProject.domain;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 
-@Getter
-@RequiredArgsConstructor
-public enum Role {
+public class Role implements GrantedAuthority {
 
-    GUEST("ROLE_GUEST", "손님"),
-    USER("ROLE_USER", "일반 사용자");
+	private static final long serialVersionUID = 7464267597005842862L;
+	
+	private String username;
+	private String role;
 
-    private final String key;
-    private final String title;
+	// 추가
+	public Role() {}
+	
+	// 추가
+	public Role(String username, String role) {
+		this.username = username;
+		this.role = role;
+	}
 
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	@Override
+	public String getAuthority() {
+		return this.role;
+	}
+
+	@Override
+	public String toString() {
+		return "Role [username=" + username + ", role=" + role + "]";
+	}
+	
 }

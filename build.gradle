@@ -68,6 +68,9 @@ dependencies {
 	// Open CSV
 	implementation 'com.opencsv:opencsv:5.9'
 	
+	// AJAX axios
+	implementation 'org.webjars.npm:axios:1.5.0'
+	
 	// 한글 형태소 분석
 	// https://docs.komoran.kr/
 	// https://mvnrepository.com/artifact/com.github.shin285/KOMORAN
@@ -88,6 +91,17 @@ dependencies {
     
     // bootstrap
     implementation 'org.webjars:bootstrap:5.3.1'
+    
+    // 게시판에서 추가된 요소
+	// summernote
+	implementation 'org.webjars.npm:summernote:0.8.18'
+	
+	implementation 'commons-fileupload:commons-fileupload:1.5'
+	
+	// summernote image → Image Resize(이미지 크기 재조정) library(라이브러리) 
+    // site : https://github.com/rkalla/imgscalr
+	// API referece doc : https://javadoc.io/doc/org.imgscalr/imgscalr-lib/latest/index.html
+	implementation 'org.imgscalr:imgscalr-lib:4.2'
 }
 
 tasks.named('bootBuildImage') {

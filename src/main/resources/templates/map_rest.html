@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Kakao 지도 시작하기</title>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=다음 카카오 지도서비스 Javascript 키"></script>
+
+	<script>
+	function parseCheck(obj) {
+
+		console.log("아이디 : ", obj.id);
+		obj.value = obj.checked == true ? "1" : "0";
+	}
+
+	window.onload = function() {
+
+		var container = document.getElementById('map');
+		var options = {
+			// 기본값 : 신림역
+			center: new kakao.maps.LatLng(37.484269, 126.929676),
+			level: 1
+		};
+
+		var map = new kakao.maps.Map(container, options);
+
+		////////////////////////////////////////////////////////////////////
+
+		document.getElementById("searchBtn").onclick = function(e) {
+
+			alert("클릭");
+
+			let form = document.getElementById("frm");
+			let formData = new FormData(form);
+
+			axios({
+				method : 'POST',
+				url : '/campProject/mapRest3',
+				data : formData,
+				// headers: { "Content-Type": "multipart/form-data" },
+			})
+			.then(function(response) {
+
+				let campList = response.data
+
+				console.log("response : ", campList);
+
+				console.log("캠프장-1 위도 : ", campList[0].latitude);
+				console.log("캠프장-1 경도 : ", campList[0].longitude);
+				console.log("캠프장-1 주소 : ", campList[0].roadAddress);
+
+				var container = document.getElementById('map');
+
+				var options = {
+					center: new kakao.maps.LatLng(campList[0].latitude, campList[0].longitude),
+					level: 8
+				};
+
+				var map = new kakao.maps.Map(container, options);
+
+				// 다중 마커 표시
+				var positions = [];
+
+				// 클릭한 마커를 담을 변수
+			    let selectedMarker = null;
+
+				// 마커 이미지
+				var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+
+				 // 마커 이미지의 이미지 크기 입니다
+			    var imageSize = new kakao.maps.Size(24, 35);
+
+			    // 마커 이미지를 생성합니다
+			    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+			    let camp = { title : '', latlng : '' };
+
+			    let recommList = document.getElementById("recommList"); // 서버에서 송부된 추천 캠핑장들의 정보
+
+				recommList.innerHTML = ""; // 추천 캠핑장들 정보 패널 초기화
+
+				for (var i=0; i<campList.length; i++) {
+
+					camp.title = campList[i].campName;
+					camp.latlng = new kakao.maps.LatLng(campList[i].latitude, campList[i].longitude);
+
+					positions[i] = camp;
+
+					 // 마커 생성
+				    var marker = new kakao.maps.Marker({
+				        map: map, // 마커를 표시할 지도
+				        position: positions[i].latlng, // 마커를 표시할 위치
+				        title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+				        image : markerImage // 마커 이미지
+				    });
+
+					console.log("도로명 주소 존재 여부 : ", campList[i].roadAddress == null);
+
+					// 추천 캠핑장 목록 생성
+					var campInfo = `<b>${campList[i].campName}</b>,
+								   ${campList[i].roadAddress == null ? campList[i].jibunAddress : campList[i].roadAddress},
+								   만족도 : ${campList[i].satisfaction}<br>`;
+
+					recommList.innerHTML += campInfo;
+
+					////////////////////////////////////////////////////////////////////////////////////
+
+					(function(marker, campList, i) { // 즉시 실행 함수 (중요 !) // jquery 사용시는 반드시 필요 !
+					// jquery에서 여기서 일반적인 함수 및 구문(루틴) 사용시 인자 전달 안되는 오류 있음
+
+						// 마커에 마우스오버 이벤트를 등록합니다
+						kakao.maps.event.addListener(marker, 'click', function() {
+
+						  	console.log("마커 : ", marker);
+						  	console.log("마커 타이틀 : ", marker.getTitle());
+
+						  	// 해당 캠프장 상세 사항 가져오기
+						  	console.log("캠프장 도로명 주소 : ", campList[i].roadAddress);
+
+							let recommCamp = document.getElementById("recommCamp");
+
+							// 도로명 주소가 없으면 지번 주소를 출력
+							recommCamp.innerHTML = `<b>${marker.getTitle()}</b>,
+												   ${campList[i].roadAddress == null ? campList[i].jibunAddress : campList[i].roadAddress},
+												   만족도 : ${campList[i].satisfaction}<br>`;
+
+						});
+
+					})(marker, campList, i); // 즉시 실행 함수 실인자
+
+					/////////////////////////////////////////////////////////////////////////////
+
+				} // for
+
+			}); // done
+			// axios
+
+		} // onclick
+
+	} //
+	</script>
+</head>
+<body>
+
+	<div id="map" style="width:1300px; height:500px;"></div>
+
+	<!-- 추천된 캠핑장들 -->
+	<div id="recommList" style="width:1300px; height:150px; background-color:yellow; overflow-y:auto; padding:5px">
+	</div>
+
+	<!-- 선택된 마커에 대한 캠핑장 정보 -->
+	<div id="recommCamp" style="width:1300px; height:50px; background-color:cyan; padding:5px">
+	</div>
+
+	<div style="margin-top:20px;">
+
+		<form id="frm">
+
+			<input type="hidden" id="id" name="id" value="1" />
+
+			아이디 : <input type="text" id="userId" name="userId" value="abcd1234" readonly />
+
+			일시 : <input type="date" id="time" name="time" value="2024-05-10" />
+
+			지역 : <input type="text" id="destination" name="destination" value="태안" placeholder="해당 지역을 입력하십시오. 예) 평택" />
+
+			전기시설 : <input type="checkbox" id="isElectricity" name="isElectricity"  value="0" onclick="parseCheck(this)" />
+
+			인터넷 : <input type="checkbox" id="isWifi" name="isWifi"  value="0" onclick="parseCheck(this)" />
+
+			캠프파이어 : <input type="checkbox" id="isCampfire" name="isCampfire"  value="0" onclick="parseCheck(this)" />
+
+			온수시설 : <input type="checkbox" id="isHeater" name="isHeater"  value="0" onclick="parseCheck(this)" />
+
+			풀장 : <input type="checkbox" id="isPool" name="isPool"  value="0" onclick="parseCheck(this)" />
+
+			운동장 : <input type="checkbox" id="isPlayground" name="isPlayground"  value="0" onclick="parseCheck(this)" />
+
+			주방시설 : <input type="checkbox" id="isSink" name="isSink"  value="0" onclick="parseCheck(this)" />
+
+			산책시설 : <input type="checkbox" id="isTrail" name="isTrail"  value="0" onclick="parseCheck(this)" />
+
+			수상레저 : <input type="checkbox" id="isMaritimeLeisure" name="isMaritimeLeisure"  value="0" onclick="parseCheck(this)" />
+
+			낚시 : <input type="checkbox" id="isFishing" name="isFishing"  value="0" onclick="parseCheck(this)" />
+
+			<button id="searchBtn" type="button">전송</button>
+
+		</form>
+
+	</div>
+
+</body>
+</html>

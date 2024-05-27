@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<!-- thymeleaf dialect -->
+<html lang="ko-kr" 
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security6">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+<!-- 0524 leee index2 이미지 3개 나오는 부분. 주석 처리한 거 삭제 하기 전!! 백업해놓음. 기존과 다른점이 있다면 이미지3개 주석 처리가 되있다는점. 혹시몰라서 백업함.  -->
+
+  <title>Regna Bootstrap Template</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link th:href="@{/img/favicon.png}" rel="icon">
+  <link th:href="@{/img/apple-touch-icon.png}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Poppins:300,400,500,700" rel="stylesheet">
+  
+  <!-- Google Icon : https://material.io/tools/icons/?style=baseline -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+  <!-- Vendor CSS Files -->
+  <link th:href="@{/vendor/aos/aos.css}" rel="stylesheet">
+  <link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+  <link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+  <link th:href="@{/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+  <link th:href="@{/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
+  <link th:href="@{/vendor/swiper/swiper-bundle.min.css}" rel="stylesheet">
+
+  <!-- Template Main CSS File -->
+  <link th:href="@{/css/style.css}" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: Regna
+  * Template URL: https://bootstrapmade.com/regna-bootstrap-onepage-template/
+  * Updated: Mar 17 2024 with Bootstrap v5.3.3
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+	<script>
+	function parseCheck(obj) {
+
+		console.log("아이디 : ", obj.id);
+		obj.value = obj.checked == true ? "1" : "0";
+	}
+
+	window.onload = function() {
+
+		document.getElementById("searchBtn").onclick = function(e) {
+
+			let form = document.getElementById("frm");
+			let formData = new FormData(form);
+
+			axios({
+				method : 'POST',
+				url : '/campProject/mapRest4',
+				data : formData,
+			})
+			.then(function(response) {
+
+				let campList = response.data;
+
+				console.log("response : ", campList);
+
+				console.log("캠프장-1 위도 : ", campList[0].latitude);
+				console.log("캠프장-1 경도 : ", campList[0].longitude);
+				console.log("캠프장-1 주소 : ", campList[0].roadAddress);
+
+			    let camp = { title : '', roadAddress : '', jibunAddress : '', img : '', 
+				    		 imgs1 : '', imgs2 : '', imgs3 : '', campId : '', campFire : '', 
+				    		 isFool : '', isPlayground : '', isWifi : '', isTrail : '', isElectricity : ''};
+
+				campContainer.innerHTML ="";//패널 초기화 0522 LEEE
+
+				for (var i=0; i<campList.length; i++) {
+						
+					//캠프장 사용시설 0522 leee
+					camp.title = campList[i].campName;
+					camp.roadAddress = campList[i].roadAddress;
+					camp.jibunAddress = campList[i].jibunAddress;
+					camp.campId= campList[i].campId;
+					camp.img = campList[i].campImg;
+					camp.imgs1 = campList[i].ImgNames1;
+					camp.imgs2 = campList[i].ImgNames2;
+					camp.imgs3 = campList[i].ImgNames3;
+					camp.campFire = campList[i].isCampfire;
+					camp.isFool = campList[i].isFool;
+					camp.isPlayground = campList[i].isPlayground;
+					camp.isWifi = campList[i].isWifi;
+					camp.isTrail = campList[i].isTrail;
+					camp.isElectricity = campList[i].isElectricity;
+
+	                let campContainer = document.getElementById("campContainer");
+	                
+	                let imgUrl ="";
+	                let campImageDiv = "";
+	                
+	                //캠프장 이미지 이미지가 없다면 아무것도 보여주지 않음--> 이미지없는 사진 하나 만들어서 보여줘야함. 
+	                if(camp.img != null){
+	                
+		                imgUrl = "/campProject/img/thumb/" + camp.img;
+		                
+		                campImageDiv = `<div>
+	                				  		<img src="${imgUrl}" class="item d-flex justify-content-start"
+	                				  			 style="width:600px; height:400px; margin: 40px;"/>
+	                				    </div>`;
+	                } else {
+
+	                	campImageDiv = `<div class="item d-flex justify-content-start"
+   				  		 					 style="width:600px; height:400px; margin: 40px;">
+   				  		 					 이미지 없음.
+	                				    </div>`;
+	                	
+	                }
+	                
+	                /////////////////////////////캠프장 상세 3개 이미지 //////////////////////////////////////////////
+	                //이미지1
+	               /*  if(camp.imgs1 != null){
+		                
+	                	imgUrl1 = "/campProject/img/thumb_sub4/" + camp.imgs1;
+		                
+	                	campImgsDiv1 = `<div>
+			    				  		<img src="${imgUrl1}" class="d-flex bg-light align-self-start"
+			    				  			 style="width:400px; height:400px; margin: 40px 0 0 40px;"/>
+			    				  		</div>`;
+	                } else {
+
+	                	campImgsDiv1 = `<div>
+			    				  		<img class="d-flex bg-light align-self-start"
+			    				  			 style="width:400px; height:400px; margin: 40px 0 0 40px;"/>
+			    				  		</div>`;
+	                }
+	                
+	              	//이미지2
+	                if(camp.imgs1 != null){
+		                
+	                	imgUrl2 = "/campProject/img/thumb_sub4/" + camp.imgs2;
+		                
+	                	campImgsDiv2 = `<div>
+			    				  		<img src="${imgUrl2}" class="d-flex bg-light align-self-start"
+			    				  			 style="width:400px; height:400px; margin: 40px 0 0 40px;"/>
+			    				  		</div>`;
+	                } else {
+
+	                	campImgsDiv2 = `<div>
+			    				  		<img class="d-flex bg-light align-self-start"
+			    				  			 style="width:400px; height:400px; margin: 40px 0 0 40px;"/>
+			    				  		</div>`;
+	                }
+	              	//이미지3
+	                if(camp.imgs1 != null){
+		                
+	                	imgUrl3 = "/campProject/img/thumb_sub4/" + camp.imgs3;
+		                
+	                	campImgsDiv3 = `<div>
+			    				  		<img src="${imgUrl3}" class="d-flex bg-light align-self-start"
+			    				  			 style="width:400px; height:400px; margin: 40px 0 0 40px;"/>
+			    				  		</div>`;
+	                } else {
+
+	                	campImgsDiv3 = `<div>
+			    				  		<img class="d-flex bg-light align-self-start"
+			    				  			 style="width:400px; height:400px; margin: 40px 0 0 40px;"/>
+			    				  		</div>`;
+	                } */
+	                
+	                /////////////////////////////</캠프장 상세 3개 이미지> //////////////////////////////////////////////
+	                
+	                //캠프장 사용시설 이모티콘. 해당하는 시설만 보여줌. 
+	                let campFire = `${camp.campFire == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;" class="material-symbols-outlined">local_fire_department<br><p style="font-size:15px;color:#000;text-align:center;">캠프파이어</p></span>' : ''}`;
+	                let isFool = `${camp.isFool == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">pool<br><p style="font-size:15px;color:#000;text-align:center;">수영시설</p></span>' : ''}`;
+	                let isPlayground = `${camp.isPlayground == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">sports_soccer<br><p style="font-size:15px;color:#000;text-align:center;">운동시설</p></span>' : ''}`;
+	                let isWifi = `${camp.isWifi == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">wifi<br><p style="font-size:15px;color:#000;text-align:center;">와이파이</p></span>' : ''}`;
+	                let isTrail = `${camp.isTrail == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">forest<br><p style="font-size:15px;color:#000;text-align:center;">산책로</p></span>' : ''}`;
+	                let isElectricity = `${camp.isElectricity == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">bolt<br><p style="font-size:15px;color:#000;text-align:center;">전기이용</p></span>' : ''}`;
+	                
+	                //캠프장 사용시설 보여주는 div
+	                //let campInfoDiv = `<div class="item d-flex bg-warning align-self-baseline p-2" 
+					//						style="width:800px; height:120px; margin:20px;">
+					//						${campFire}${isFool}${isPlayground}${isWifi}${isTrail}${isElectricity}
+				    //				   </div>`;
+				    				   
+	                //캠프장 이름. 장소, 전화번호. 
+	                let campTitleAddressDiv = `<div style="width:800px;">
+				                					<div class="item d-flex align-self-start" 
+				                						 style="width:700px; height:120px; margin:40px;">
+				                						 ${camp.title}
+				                					</div>
+				                					<div class="item d-flex align-self-start" 
+				                						 style="width:700px; height:120px; margin:40px;">
+				                						 ${camp.title}
+				                					</div>
+				                					<div class="item d-flex align-self-start" 
+				                						 style="width:700px; height:50px; margin:40px;">
+				                						 ${camp.roadAddress}
+				                					</div>
+				                					<div class="item d-flex align-self-start" 
+				                						 style="width:700px; height:50px; margin:40px;">
+				                						 ${camp.roadAddress}
+				                					</div>
+				                					<div class="item d-flex align-self-baseline p-2" 
+														style="width:700px; height:120px; margin:40px;">
+														${campFire}${isFool}${isPlayground}${isWifi}${isTrail}${isElectricity}
+							    				   </div>
+				                				</div>`;
+	                					
+	                //캠프장 도로명주소. 
+	                //let campRoadAddressDiv = `<div class="item d-flex bg-light align-self-start" 
+	                //						 style="width:500px; height:120px; margin:40px;">
+	                //						 ${camp.roadAddress}
+	                //					</div>`;
+	                					
+					
+				    //위의 내용들을 하나의 div에 넣음. 
+	                let campDiv = `<div class="bg-light d-flex justify-content-center flex-wrap w-100 my-2">
+	                 					${campImageDiv}
+	                 					${campTitleAddressDiv}
+	                 			   </div>`;
+	                
+	                // 아래  id가 campContainer인 곳에 넣음. 
+	                campContainer.innerHTML += campDiv;
+	
+				} // for
+
+			}); // done
+			// axios
+
+		} // onclick
+
+	} //
+	</script>
+<style type="text/css">
+.top_search_box{
+	height: 300px;
+	width:700px;
+	background-color: #fff;
+	display: inline-block;
+}
+
+.container {
+	grid-template-columns: 50px;
+	grid-auto-columns: 1fr 2fr;
+}
+
+.item:nth-child(1) {
+	/* 1번 라인에서 2칸 */
+	grid-column: 1 / span 2;
+	/* 1번 라인에서 3칸 */
+	grid-row: 1 / span 3;
+}
+</style>
+
+</head>
+
+<body>
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center header-transparent">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div id="logo">
+        <a th:href="@{/}"><img th:src="@{/img/logo.png}" alt=""></a>
+        <!-- Uncomment below if you prefer to use a text logo -->
+        <!--<h1><a th:href="@{/index.html}">Regna</a></h1>-->
+      </div>
+      
+	  <span sec:authorize="isAuthenticated()" th:utext="${'<b>' + #authentication.principal.attributes.email} + '</b> 님 환영합니다.'" style="color:#fff;"></span>
+      
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" th:href="@{/#hero}">메인화면</a></li>
+          <li><a class="nav-link scrollto" th:href="@{/#about}">리뷰게시판</a></li>
+          <li><a class="nav-link scrollto" th:href="@{/#services}">예약현황</a></li>
+          <li class="dropdown"><a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
+            <ul>
+              <li><a href="#">Drop Down 1</a></li>
+              <li class="dropdown"><a href="#"><span>예약현황</span> <i class="bi bi-chevron-right"></i></a>
+                <ul>
+                  <li><a href="#">내정보조회</a></li>
+                  <li><a href="#">나의 예약현황</a></li>
+                  <li><a href="#">내 정보 수정</a></li>
+                  <li><a href="#">내가 본 캠핑장</a></li>
+                </ul>
+              </li>
+              <li><a href="#">Drop Down 2</a></li>
+              <li><a href="#">Drop Down 3</a></li>
+              <li><a href="#">Drop Down 4</a></li>
+            </ul>
+          </li>
+          <li sec:authorize="isAnonymous()" ><a class="btn btn-secondary active m-2" role="button" th:href="@{/login/oauth2/authorization/naver}">로그인</a></li>
+          <li sec:authorize="isAuthenticated()"><a class="btn btn-secondary active m-2" role="button" th:href="@{'/logout'}">로그아웃</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+    </div>
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+    <div class="hero-container" data-aos="zoom-in" data-aos-delay="100">
+      <h1>캠핑장 검색하기</h1>
+      <div class="w-50 h-25 bg-info">
+     	 <nav class="navbar">
+		  <div class="container-fluid">
+		    <form class="d-flex" role="search">
+		      <a class="btn btn-outline-success" th:href="@{/map_rest_naver}">지도에서 찾기</a>
+		      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+		      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+		      <!-- <button class="btn btn-outline-success" type="submit">Search</button> -->
+		    </form>
+		    <div style="margin-top:20px;">
+
+				<form id="frm">
+		
+					<input type="hidden" id="id" name="id" value="1" />
+		
+					아이디 : <input type="text" id="userId" name="userId" value="abcd1234" readonly />
+		
+					일시 : <input type="date" id="time" name="time" value="2024-05-10" />
+		
+					지역 : <input type="text" id="destination" name="destination" value="태안" placeholder="해당 지역을 입력하십시오. 예) 평택" /><br>
+		
+					전기시설 : <input type="checkbox" id="isElectricity" name="isElectricity"  value="0" onclick="parseCheck(this)" />
+		
+					인터넷 : <input type="checkbox" id="isWifi" name="isWifi"  value="0" onclick="parseCheck(this)" />
+		
+					캠프파이어 : <input type="checkbox" id="isCampfire" name="isCampfire"  value="0" onclick="parseCheck(this)" />
+		
+					온수시설 : <input type="checkbox" id="isHeater" name="isHeater"  value="0" onclick="parseCheck(this)" />
+		
+					풀장 : <input type="checkbox" id="isPool" name="isPool"  value="0" onclick="parseCheck(this)" />
+		
+					운동장 : <input type="checkbox" id="isPlayground" name="isPlayground"  value="0" onclick="parseCheck(this)" />
+		
+					주방시설 : <input type="checkbox" id="isSink" name="isSink"  value="0" onclick="parseCheck(this)" />
+		
+					산책시설 : <input type="checkbox" id="isTrail" name="isTrail"  value="0" onclick="parseCheck(this)" />
+		
+					수상레저 : <input type="checkbox" id="isMaritimeLeisure" name="isMaritimeLeisure"  value="0" onclick="parseCheck(this)" />
+		
+					낚시 : <input type="checkbox" id="isFishing" name="isFishing"  value="0" onclick="parseCheck(this)" />
+		
+					<button id="searchBtn" type="button">전송</button>
+		
+				</form>
+		
+			  </div>
+		  </div>
+		</nav>
+      </div>
+      <!-- <h2>We are team of talented designers making websites with Bootstrap</h2> -->
+     <!--  <a th:href="@{/#about}" class="btn-get-started">Get Started</a> -->
+    </div>
+  </section><!-- End Hero Section -->
+
+  <main id="main">
+  
+
+    <!-- ======= Facts Section ======= -->
+    <!-- <section id="facts" style="overflow: scroll;">
+      <div class="container" data-aos="fade-up">
+        <div class="section-header bg-danger">
+			
+        </div>
+      </div>
+    </section> --> <!-- End Facts Section -->
+		<div id="campContainer" class="d-flex flex-wrap" style="overflow-y: auto; min-height:0px; height: 1000px; width: 90%; margin:20px auto; ">
+		</div>
+			   
+  </main><!-- End #main -->
+
+
+  <!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="footer-top">
+      <div class="container">
+
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="copyright">
+        &copy; Copyright <strong>Regna</strong>. All Rights Reserved
+      </div>
+      <div class="credits">
+        <!--
+        All the links in the footer should remain intact.
+        You can delete the links only if you purchased the pro version.
+        Licensing information: https://bootstrapmade.com/license/
+        Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/buy/?theme=Regna
+      -->
+        Designed by <a th:href="@{/https://bootstrapmade.com/}">BootstrapMade</a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script th:src="@{/vendor/purecounter/purecounter_vanilla.js}"></script>
+  <script th:src="@{/vendor/aos/aos.js}"></script>
+  <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/vendor/glightbox/js/glightbox.min.js}"></script>
+  <script th:src="@{/vendor/isotope-layout/isotope.pkgd.min.js}"></script>
+  <script th:src="@{/vendor/swiper/swiper-bundle.min.js}"></script>
+  <script th:src="@{/vendor/php-email-form/validate.js}"></script>
+
+  <!-- Template Main JS File -->
+  <script th:src="@{/js/main.js}"></script>
+
+</body>
+
+</html>

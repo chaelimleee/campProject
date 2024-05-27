@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security6"
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	  layout:decorate="~{layout}" lang="ko-kr">
+<head>
+<meta charset="UTF-8">
+<title>게시글 삭제 패쓰워드 입력</title>
+
+</head>
+<body>
+
+	<!-- layout -->
+	<div layout:fragment="content" class="main_sect_pnl">
+
+		<div class="content_sect_pnl">
+		
+			<!-- Product Start -->
+		   <div class="container-xxl py-2">
+		       
+		        <div class="container" style="margin-top:200px">
+		            <div class="row g-0 gx-5 align-items-end">
+		                <div class="col-lg-6">
+		                    <div class="section-header text-start mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px; ">
+		                        <h1 class="display-6 mb-4"> 리뷰 게시판 </h1>
+		                        <p>다양한 사람들과 이야기해보세요!</p>
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		
+				<h4 class="d-flex justify-content-center">리뷰 삭제(패스워드입력)</h4>
+				
+				<form th:action="@{'/board/deleteProc.do'}" method="POST">
+				
+					<input type="hidden" id="boardCode" name="boardCode" th:value="${boardCode}">
+					
+					<table class="table mx-auto mt-4" style="width:550px;">
+					
+						<tr>
+							<th style="width: 150px">게시글 번호</th>
+							<td th:text="${boardCode}" style="color:gray;" readonly></td>
+						</tr>
+			
+						<tr>
+							<th style="width: 150px">패쓰워드</th>
+							<td>
+								<input type="password" id="boardPass" name="boardPass" class="form-control" style="width:300px" 
+									   required pattern="(?=.*[a-zA-Z])((?=.*\d)(?=.*\W)).{8,20}"
+									   title="패쓰워드는 8~20자 이내 영문대소문자 및 숫자 혹은 특수문자를 포함해야 합니다."> 
+							
+							</td>
+						</tr>
+						
+					</table>
+				
+					<div class="d-flex justify-content-center mb-3"> 
+					
+						<button type="submit" class="btn btn-primary me-2">전송</button>
+						
+						<a type="button" class="btn btn-outline-success" th:href="@{/board/list.do}">게시글 목록</a>
+						&nbsp;
+						
+					</div>
+				
+			   </form>
+			   
+			</div> <!--// container -->
+			
+		</div> <!--// Product End -->
+	
+		<!-- Back to Top -->
+   			<a href="#" class="btn btn-lg btn-success btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
+			
+			<script th:src="@{/lib/wow/wow.min.js}"></script>
+		    <script th:src="@{/lib/easing/easing.min.js}"></script>
+		    <script th:src="@{/lib/waypoints/waypoints.min.js}"></script>
+		    <script th:src="@{/lib/owlcarousel/owl.carousel.min.js}"></script>
+
+		    <!-- Template Javascript -->
+		    <script th:src="@{/js/main.js}"></script>
+		    
+		</div>	<!--// content -->
+
+	</div>
+	<!--// layout -->
+
+</body>
+</html>

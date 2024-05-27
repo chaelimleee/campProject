@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8"/>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>Kakao 지도 시작하기</title>
+	<meta content="" name="description">
+	<meta content="" name="keywords">
+
+	<!-- Favicons -->
+	<link th:href="@{/img/favicon.png}" rel="icon">
+	<link th:href="@{/img/apple-touch-icon.png}" rel="apple-touch-icon">
+	
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Poppins:300,400,500,700" rel="stylesheet">
+	
+	<!-- Google Icon : https://material.io/tools/icons/?style=baseline -->
+  	<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	
+	<!-- Vendor CSS Files -->
+	<link th:href="@{/vendor/aos/aos.css}" rel="stylesheet">
+	<link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+	<link th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}" rel="stylesheet">
+	<link th:href="@{/vendor/boxicons/css/boxicons.min.css}" rel="stylesheet">
+	<link th:href="@{/vendor/glightbox/css/glightbox.min.css}" rel="stylesheet">
+	<link th:href="@{/vendor/swiper/swiper-bundle.min.css}" rel="stylesheet">
+
+	
+	<script th:src="@{/vendor/bootstrap/js/bootstrap.min.js}"></script>
+	
+	<link th:href="@{/css/modal.css}" rel="stylesheet">
+	<!-- Template Main CSS File -->
+	<link th:href="@{/css/style.css}" rel="stylesheet">
+	
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=147ffa1a9f1208679234cd74fc9e21d3"></script>
+
+	<script>
+	function parseCheck(obj) {
+
+		console.log("아이디 : ", obj.id);
+		obj.value = obj.checked == true ? "1" : "0";
+	}
+
+	window.onload = function() {
+		
+		//modal 제어
+		let win = document.getElementById("modal");
+		let modalBody = document.getElementById("modal_body");
+		//let openBtn = document.getElementById("openBtn");
+		let closeBtn = document.getElementById("close_btn");
+		
+		window.onscroll = (e) => {
+			console.log("스크롤");
+
+			console.log("y = " + window.screenTop);
+			
+			//win.style.top = 0;
+		}
+	
+		closeBtn.onclick = (e) => {
+			
+			console.log("창닫기");
+			win.style.visibility = "hidden";
+		} //
+	
+		/* openBtn.onclick = (e) => {
+	
+			console.log("창열기");
+			win.style.visibility = "visible";
+		} // */
+
+		var container = document.getElementById('map');
+		var options = {
+			// 기본값 : 신림역
+			center: new kakao.maps.LatLng(37.484269, 126.929676),
+			level: 1
+		};
+
+		var map = new kakao.maps.Map(container, options);
+
+		////////////////////////////////////////////////////////////////////
+
+		document.getElementById("searchBtn").onclick = function(e) {
+
+			let form = document.getElementById("frm");
+			let formData = new FormData(form);
+
+			axios({
+				method : 'POST',
+				url : '/campProject/mapRest4',
+				data : formData,
+				// headers: { "Content-Type": "multipart/form-data" },
+			})
+			.then(function(response) {
+
+				let campList = response.data;
+
+				console.log("response : ", campList);
+
+				console.log("캠프장-1 위도 : ", campList[0].latitude);
+				console.log("캠프장-1 경도 : ", campList[0].longitude);
+				console.log("캠프장-1 주소 : ", campList[0].roadAddress);
+
+				var container = document.getElementById('map');
+
+				var options = {
+					center: new kakao.maps.LatLng(campList[0].latitude, campList[0].longitude),
+					level: 8
+				};
+
+				var map = new kakao.maps.Map(container, options);
+
+				// 다중 마커 표시
+				var positions = [];
+
+				// 클릭한 마커를 담을 변수
+			    let selectedMarker = null;
+
+				// 마커 이미지
+				var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+
+				 // 마커 이미지의 이미지 크기 입니다
+			    var imageSize = new kakao.maps.Size(24, 35);
+
+			    // 마커 이미지를 생성합니다
+			    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+			    let camp = { title : '', latlng : '', roadAddress : '', jibunAddress : '', img : '', 
+			    		 imgs1 : '', imgs2 : '', imgs3 : '', campId : '', campFire : '', 
+			    		 isPool : '', isPlayground : '', isWifi : '', isTrail : '', isElectricity : '',
+			    		 facilDetail :'', satisfaction : '', avgRating : '',
+			    		 reviewPositive : '', reviewNegative : ''};
+
+			    let recommList = document.getElementById("recommList"); // 서버에서 송부된 추천 캠핑장들의 정보
+
+				recommList.innerHTML = ""; // 추천 캠핑장들 정보 패널 초기화
+				modalBody.innerHTML = ""; // 캠핑 modal 초기화 0523
+				
+				/////////////////////////////////////////////////////////////////////////////////////////
+				
+				// 캠핑장 이름, 캠핑장 주소, 고객니즈 충족도(%), 네이버 평점, 긍정/부정 지수
+				var campInfo = `<table id="campMapListTbl" class="table mt-5">
+								    <thead>
+								      <tr>
+								        <th scope="col">번호</th>
+								        <th scope="col">캠핑장</th>
+								        <th scope="col">주소</th>
+								        <th scope="col">고객니즈 충족도(%)</th>
+								        <th scope="col">네이버 평점</th>
+								        <th scope="col">긍정 지수</th>
+								        <th scope="col">부정 지수</th>
+								      </tr>
+								    </thead>
+								  	<tbody>
+									</tbody>
+								</table>`;
+								
+				recommList.innerHTML = campInfo;
+
+				let campMapListTbody = document.querySelector("#campMapListTbl tbody");
+				
+				for (var i=0; i<campList.length; i++) {
+
+					camp.title = campList[i].campName;
+					camp.latlng = new kakao.maps.LatLng(campList[i].latitude, campList[i].longitude);
+
+					positions[i] = camp;
+
+					 // 마커 생성
+				    var marker = new kakao.maps.Marker({
+				        map: map, // 마커를 표시할 지도
+				        position: positions[i].latlng, // 마커를 표시할 위치
+				        title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+				        image : markerImage // 마커 이미지
+				        
+				    });
+
+					console.log("도로명 주소 존재 여부 : ", campList[i].roadAddress == null);
+
+					// 추천 캠핑장 목록 생성
+					/* var campInfo = `<b>${campList[i].campName}</b>,
+								   ${campList[i].roadAddress == null ? campList[i].jibunAddress : campList[i].roadAddress},
+								   만족도 : ${campList[i].satisfaction}
+								   네이버 평점 : ${campList[i].avgRating},
+								   네이버 긍정지수 : ${campList[i].reviewPositive},
+								   네이버 부정지수 : ${campList[i].reviewNegative}
+								   <br>`; */
+					
+					// 캠핑장 이름, 캠핑장 주소, 고객니즈 충족도(%), 네이버 평점, 긍정/부정 지수			   
+					var campInfo = `<tr>
+										<td>${i+1}</td>
+										<td>${campList[i].campName}</td>
+								        <td>${campList[i].roadAddress == null ? campList[i].jibunAddress : campList[i].roadAddress}</td>
+								        <td>${campList[i].satisfaction}</td>
+								        <td>${campList[i].avgRating}</td>
+								        <td>${campList[i].reviewPositive}</td>
+								        <td>${campList[i].reviewNegative}</td>
+									</tr>`;
+
+					campMapListTbody.innerHTML += campInfo;
+					
+					//modal 정보
+					//캠프장 사용시설 0522 leee
+					/* camp.title = campList[i].campName;
+					camp.roadAddress = campList[i].roadAddress;
+					camp.jibunAddress = campList[i].jibunAddress;
+					camp.campId= campList[i].campId;
+					camp.img = campList[i].campImg;
+					camp.imgs1 = campList[i].imgName1;
+					camp.imgs2 = campList[i].imgName2;
+					camp.imgs3 = campList[i].imgName3;
+					camp.campFire = campList[i].isCampfire;
+					camp.isPool = campList[i].isPool;
+					camp.isPlayground = campList[i].isPlayground;
+					camp.isWifi = campList[i].isWifi;
+					camp.isTrail = campList[i].isTrail;
+					camp.isElectricity = campList[i].isElectricity;
+					camp.facilDetail = campList[i].facilDetail;
+					camp.satisfaction = campList[i].satisfaction;
+					camp.avgRating = campList[i].avgRating;
+					camp.reviewPositive = campList[i].reviewPositive;
+					camp.reviewNegative = campList[i].reviewNegative; */
+					
+
+					////////////////////////////////////////////////////////////////////////////////////
+
+					(function(marker, campList, i) { // 즉시 실행 함수 (중요 !) // jquery 사용시는 반드시 필요 !
+					// jquery에서 여기서 일반적인 함수 및 구문(루틴) 사용시 인자 전달 안되는 오류 있음
+					
+						// 마커에 마우스오버 이벤트를 등록합니다
+						kakao.maps.event.addListener(marker, 'click', function() {
+							
+						  	console.log("마커 : ", marker);
+						  	console.log("마커 타이틀 : ", marker.getTitle());
+
+						  	// 해당 캠프장 상세 사항 가져오기
+						  	//console.log("캠프장 도로명 주소 : ", (campList[i].roadAddress == null ? campList[i].jibunAddress : campList[i].roadAddress));
+						  	
+						  	modal.style.visibility='visible';
+						  	
+						  	//개별 캠핑장 정보 modal 구성 
+						  	let imgUrl ="";
+			                let campImageDiv = "";
+			                
+			                let blankImg = "/campProject/img/camp_blank_img.png";
+			                
+			                //캠프장 이미지 이미지가 없다면 아무것도 보여주지 않음--> 이미지없는 사진 하나 만들어서 보여줘야함. 
+			                if(campList[i].campImg != null){
+			                
+				                imgUrl = "/campProject/img/thumb/" + campList[i].campImg;
+				                
+				                campImageDiv = `<div>
+			                				  		<img src="${imgUrl}" class="item d-flex justify-content-start"
+			                				  			 style="width:600px; height:400px; margin-right: 10px;"/>
+			                				    </div>`;
+			                } else {
+			                	
+			                	campImageDiv = `<div>
+			   				  		 				<img src="${blankImg}" class="item d-flex justify-content-start"
+			                				  			 style="width:600px; height:400px; margin-right: 10px;"/>
+			                				    </div>`;
+			                	
+			                }
+			                
+			                //캠프장 사용시설 이모티콘. 해당하는 시설만 보여줌. 
+			                let campFire = `${campList[i].isCampfire == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;" class="material-symbols-outlined">local_fire_department<br><p style="font-size:15px;color:#000;text-align:center;">캠프파이어</p></span>' : ''}`;
+			                let isPool = `${campList[i].isPool == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">pool<br><p style="font-size:15px;color:#000;text-align:center;">수영시설</p></span>' : ''}`;
+			                let isPlayground = `${campList[i].isPlayground == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">sports_soccer<br><p style="font-size:15px;color:#000;text-align:center;">운동시설</p></span>' : ''}`;
+			                let isWifi = `${campList[i].isWifi == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">wifi<br><p style="font-size:15px;color:#000;text-align:center;">와이파이</p></span>' : ''}`;
+			                let isTrail = `${campList[i].isTrail == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">forest<br><p style="font-size:15px;color:#000;text-align:center;">산책로</p></span>' : ''}`;
+			                let isElectricity = `${campList[i].isElectricity == 1 ? '<span style="font-size:50px;color:blue;margin:10px 20px;text-align:center;"  class="material-symbols-outlined">bolt<br><p style="font-size:15px;color:#000;text-align:center;">전기이용</p></span>' : ''}`;
+			                
+			                //캠프장 이름. 장소, 전화번호. 
+			                let campTitleAddressDiv = `<div style="width:800px;height:400px;overflow:hidden">
+						                					<div class="item d-flex justify-content-start" 
+						                						 style="width:600px; height:70px; margin:10px 20px;font-size:20px;">
+						                						 ${campList[i].campName}
+						                					</div>
+						                					<div class="item d-flex justify-content-start" 
+						                						 style="width:700px; height:150px; margin-left:10px;">
+						                						 ${campList[i].facilDetail.substring(0,100)}...
+						                					</div>
+						                					<div class="item d-flex justify-content-start" 
+						                						 style="width:700px; height:50px; margin-left:10px;">
+						                						 ${campList[i].roadAddress == null ? campList[i].jibunAddress : campList[i].roadAddress}
+						                					</div>
+						                					<div class="item d-flex align-self-baseline p-2" 
+																style="width:700px; height:120px; margin-left:10px;">
+																${campFire}${isPool}${isPlayground}${isWifi}${isTrail}${isElectricity}
+									    				   </div>
+						                				</div>`;
+						                				
+							/////////////////////////////캠프장 상세 3개 이미지 //////////////////////////////////////////////
+							
+							
+							/* <div>
+					  			<img alt="이미지" src="/img/team-4.jpg" th:src="@{/img/team-4.jpg}" class="mx-auto d-block">
+					  			<img alt="이미지2" src="/images/team-3.jpg" th:src="@{/img/team-3.jpg}" class="mx-auto d-block">
+					  		</div> */
+							
+			                //이미지1
+			                if(campList[i].imgName1 != null){
+				                
+			                	imgUrl1 = "/campProject/thumb_sub4_ext/" + campList[i].imgName1;
+				                
+			                	campImgsDiv1 = `<div>
+					    				  		<img class="rounded" src="${imgUrl1}" style="width:400px; height:300px; margin: 40px 0 0 40px;"/>
+					    				  		</div>`;
+			                } else {
+
+			                	campImgsDiv1 = `<div>
+						    				  		<img class="rounded" src="${blankImg}" style="width:400px; height:300px; margin: 40px 0 0 40px;"/>
+					    				  		</div>`;
+			                }
+			                
+			              	//이미지2
+			                if(campList[i].imgName2 != null){
+				                
+			                	imgUrl2 = "/campProject/thumb_sub4_ext/" + campList[i].imgName2;
+				                
+			                	campImgsDiv2 = `<div>
+					    				  		<img class="rounded" src="${imgUrl2}" style="width:400px; height:300px; margin: 40px 0 0 40px;"/>
+					    				  		</div>`;
+			                } else {
+
+			                	campImgsDiv2 = `<div>
+						    				  		<img class="rounded" src="${blankImg}" style="width:400px; height:300px; margin: 40px 0 0 40px;"/>
+   				  								</div>`;
+			                }
+			              	//이미지3
+			                if(campList[i].imgName3 != null){
+				                
+			                	imgUrl3 = "/campProject/thumb_sub4_ext/" + campList[i].imgName3;
+				                
+			                	campImgsDiv3 = `<div>
+					    				  		<img class="rounded" src="${imgUrl3}" style="width:400px; height:300px; margin: 40px 0 0 40px;"/>
+					    				  		</div>`;
+			                } else {
+
+			                	campImgsDiv3 = `<div>
+						    				  		<img class="rounded" src="${blankImg}" style="width:400px; height:300px; margin: 40px 0 0 40px;"/>
+					   				  			</div>`;
+			                }
+			              	
+			              	let campImgsTotalDiv = `<div class="d-flex justify-content-between bg-light">
+									              		${campImgsDiv1}
+						             					${campImgsDiv2}
+						             					${campImgsDiv3}
+			              							</div>`;
+			                
+			                /////////////////////////////</캠프장 상세 3개 이미지> //////////////////////////////////////////////
+						    
+               				//위의 내용들을 하나의 div에 넣음. 
+           	                let campDiv = `<div class="bg-light d-flex justify-content-center flex-wrap w-100 my-2">
+           	                 					${campImageDiv}
+           	                 					${campTitleAddressDiv}
+           	                 					${campImgsTotalDiv}
+           	                 			   </div>`;
+						  	
+    	                 	modalBody.innerHTML=campDiv;
+    	                 	
+    	                 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+           	                 			   
+							let recommCamp = document.getElementById("recommCamp");
+
+							// 도로명 주소가 없으면 지번 주소를 출력
+							recommCamp.innerHTML = `<b>${marker.getTitle()}</b>,
+												   ${campList[i].roadAddress == null ? campList[i].jibunAddress : campList[i].roadAddress},
+												   만족도 : ${campList[i].satisfaction},
+												   네이버 평점 : ${campList[i].avgRating},
+												   네이버 긍정지수 : ${campList[i].reviewPositive},
+												   네이버 부정지수 : ${campList[i].reviewNegative},
+												   그림:${campList[i].img}
+												   <br>`;
+	
+						});
+
+					})(marker, campList, i); // 즉시 실행 함수 실인자
+
+					/////////////////////////////////////////////////////////////////////////////
+
+				} // for
+
+			}); // done
+			// axios
+
+		} // onclick
+
+	} //
+	</script>
+	<style type="text/css">
+		#map,#recommList,#recommCamp{
+			margin:0 auto;
+		}
+		.top_search_box{
+			height: 300px;
+			width:700px; 
+			background-color: #fff;
+			display: inline-block;
+		}
+		
+		.container {
+			grid-template-columns: 50px;
+			grid-auto-columns: 1fr 2fr;
+		}
+		
+		.item:nth-child(1) {
+			/* 1번 라인에서 2칸 */
+			grid-column: 1 / span 2;
+			/* 1번 라인에서 3칸 */
+			grid-row: 1 / span 3;
+		}
+		
+		.formBox{
+			width:150px; 
+			padding:5px 10px;
+			background-color : #fff;;
+		  	border-radius: 5px;
+		  	margin:7px;
+		}
+		
+	</style>
+	
+</head>
+<body>
+
+	<!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center header-transparent">
+    <div class="container d-flex justify-content-between align-items-center">
+
+      <div id="logo">
+        <a th:href="@{/}"><img th:src="@{/img/logo.png}" alt=""></a>
+        <!-- Uncomment below if you prefer to use a text logo -->
+        <!--<h1><a th:href="@{/index.html}">Regna</a></h1>-->
+      </div>
+      
+	  <span sec:authorize="isAuthenticated()" th:utext="${'<b>' + #authentication.principal.attributes.email} + '</b> 님 환영합니다.'" style="color:#fff;"></span>
+      
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" th:href="@{/}">메인화면</a></li>
+          <li><a class="nav-link scrollto" th:href="@{/board/list.do}">리뷰게시판</a></li>
+          <li><a class="nav-link scrollto" 
+          		 sec:authorize="isAuthenticated()"
+          		 th:href="@{'/member/reservationView.do?email='+${#authentication.principal.attributes.email}}">예약현황</a>
+          </li>
+          <li sec:authorize="isAnonymous()" ><a class="btn btn-secondary active m-2" role="button" th:href="@{/login/oauth2/authorization/naver}">로그인</a></li>
+          <li sec:authorize="isAuthenticated()"><a class="btn btn-secondary active m-2" role="button" th:href="@{'/logout'}">로그아웃</a></li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+    </div>
+  </header><!-- End Header -->
+
+	<!-- <button id="openBtn"></button> -->
+	
+	<!-- modal -->
+	<div id="modal">
+	    
+	    <!-- modal header -->
+		<div id="modal_header">
+		
+			<!-- closing button icon -->
+			<div id="modal_header_close">
+			    <a href="#" id="modal_close_btn">
+					<span id="close_btn" class="material-icons" style="color:#60C5F1">
+			        	clear
+			        </span>
+		        </a>
+			</div>
+		</div>
+		
+		<!-- modal content -->
+		<div id="modal_body">
+		</div>
+		
+		<!-- modal footer -->
+		<div id="modal_footer">
+		</div>
+		
+	</div>
+	
+	 <!-- ======= Hero Section ======= -->
+  <section id="hero">
+    <div class="hero-container mt-5" >
+      
+      <div class="shadow bg-light text-dark bg-opacity-25 rounded-3 my-4" style="width:1000px; height:300px;">
+     	 <nav class="navbar">
+		  <div class="container-fluid">
+		    <form class="d-flex" role="search">
+		      
+		      <!-- <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+		      <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search"> -->
+		      <!-- <button class="btn btn-outline-success" type="submit">Search</button> -->
+		    </form>
+		    <div style="margin:20px auto;">
+
+				<form id="frm" style="font-size:15px;text-align:left;">
+		
+					<input type="hidden" id="id" name="id" value="1" />
+					<h3 style="text-align:center;color:#fff;">지도에서 캠핑장 검색하기</h3>
+					<div class="d-flex justify-content-center" style="margin:10px;">
+						
+						<label for="userId" class="col-form-label" style="margin:0 10px;">아이디</label>
+						<input class="form-control" style="width:250px;" type="text" id="userId" name="userId" value="abcd1234" aria-label="readonly input example" readonly />
+		
+						<label for="time" class="col-form-label" style="margin:0 10px;">일시</label>
+						<input class="form-control" style="width:150px;" type="date" id="time" name="time" value="2024-05-10" />
+		
+						<label for="destination" class="col-form-label" style="margin:0 10px;">지역</label>
+						<input class="form-control" style="width:250px;" type="text" id="destination" name="destination" value="태안" placeholder="해당 지역을 입력하십시오. 예) 평택" /><br>
+					
+					</div>
+		
+					<div class="d-flex justify-content-center" style="margin:10px;">
+					
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isElectricity">전기시설</label> 
+						<input class="form-check-input" type="checkbox" id="isElectricity" name="isElectricity"  value="0" onclick="parseCheck(this)" /></div>
+			
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isWifi">인터넷</label> 
+						<input class="form-check-input" type="checkbox" id="isWifi" name="isWifi"  value="0" onclick="parseCheck(this)" /></div>
+	
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isCampfire">캠프파이어</label> 
+						<input class="form-check-input" type="checkbox" id="isCampfire" name="isCampfire"  value="0" onclick="parseCheck(this)" /></div>
+	
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isHeater">온수시설</label> 
+						<input class="form-check-input" type="checkbox" id="isHeater" name="isHeater"  value="0" onclick="parseCheck(this)" /></div>
+	
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isPool">풀장</label> 
+						<input class="form-check-input" type="checkbox" id="isPool" name="isPool"  value="0" onclick="parseCheck(this)" /></div>
+					
+					</div>
+					
+					<div class="d-flex justify-content-center" style="margin:10px;">
+					
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isPlayground">운동장</label> 
+						<input class="form-check-input" type="checkbox" id="isPlayground" name="isPlayground"  value="0" onclick="parseCheck(this)" /></div>
+	
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isSink">주방시설</label> 
+						<input class="form-check-input" type="checkbox" id="isSink" name="isSink"  value="0" onclick="parseCheck(this)" /></div>
+	
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isTrail">산책시설</label> 
+						<input class="form-check-input" type="checkbox" id="isTrail" name="isTrail"  value="0" onclick="parseCheck(this)" /></div>
+	
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isMaritimeLeisure">수상레저</label> 
+						<input class="form-check-input" type="checkbox" id="isMaritimeLeisure" name="isMaritimeLeisure"  value="0" onclick="parseCheck(this)" /></div>
+	
+						<div class="formBox d-flex justify-content-around">
+						<label class="form-check-label" for="isFishing">낚시</label> 
+						<input class="form-check-input" type="checkbox" id="isFishing" name="isFishing"  value="0" onclick="parseCheck(this)" /></div>
+					
+					</div>
+					<div class="d-flex justify-content-center" style="margin:10px;">
+						<a th:href="@{/}"><button style="width: 150px; height:37px; margin:0 5px;" type="button" class="btn btn-outline-light">리스트에서 찾기</button></a>
+						<button id="searchBtn" style="width: 150px; height:37px;margin:0 5px;" type="button" class="btn btn-outline-light">캠핑장 검색</button>
+					</div>
+				</form>
+				
+			  </div>
+			  
+		  </div>
+		</nav>
+      </div>
+      <!-- <h2>We are team of talented designers making websites with Bootstrap</h2> -->
+     <!--  <a th:href="@{/#about}" class="btn-get-started">Get Started</a> -->
+    <div id="map" style="width:1500px; height:500px; margin-top:10px;"></div>
+    </div>
+  </section><!-- End Hero Section -->
+	
+  	<main id="main" style="min-height:100px;">
+  	
+		<!-- 추천된 캠핑장들 -->
+		<div id="recommList" style="width:1500px; min-height:150px; overflow-y:auto; padding:5px">
+		</div>
+	
+		<!-- 선택된 마커에 대한 캠핑장 정보 -->
+		<div id="recommCamp" style="width:1500px; min-height:50px; padding:5px">
+		</div>
+	</main>
+	
+	<!-- ======= Footer ======= -->
+  <footer id="footer">
+    <div class="footer-top">
+      <div class="container">
+
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="copyright">
+        &copy; Copyright <strong>Regna</strong>. All Rights Reserved
+      </div>
+      <div class="credits">
+        <!--
+        All the links in the footer should remain intact.
+        You can delete the links only if you purchased the pro version.
+        Licensing information: https://bootstrapmade.com/license/
+        Purchase the pro version with working PHP/AJAX contact form: https://bootstrapmade.com/buy/?theme=Regna
+      -->
+        Designed by <a th:href="@{/https://bootstrapmade.com/}">BootstrapMade</a>
+      </div>
+    </div>
+  </footer><!-- End Footer -->
+  
+  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script th:src="@{/vendor/purecounter/purecounter_vanilla.js}"></script>
+  <script th:src="@{/vendor/aos/aos.js}"></script>
+  <script th:src="@{/vendor/bootstrap/js/bootstrap.bundle.min.js}"></script>
+  <script th:src="@{/vendor/glightbox/js/glightbox.min.js}"></script>
+  <script th:src="@{/vendor/isotope-layout/isotope.pkgd.min.js}"></script>
+  <script th:src="@{/vendor/swiper/swiper-bundle.min.js}"></script>
+  <script th:src="@{/vendor/php-email-form/validate.js}"></script>
+
+  <!-- Template Main JS File -->
+  <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

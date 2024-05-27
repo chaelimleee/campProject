@@ -1,0 +1,64 @@
+@charset "UTF-8";
+/* 모달 팝업창 */
+#modal {
+	position:absolute;
+	
+	/* 화면 정중앙에 위치. */
+    left:calc(50vw - 750px);
+    top:calc(50vh - 400px);
+	
+    width:1500px;
+    height:800px;
+    background-color:#fff;
+    
+    font-size:1em;
+    color:#60C5F1;
+    text-align:center;
+    padding:10px 10px;
+    
+    /* 패널 외곽선 처리 */
+    border:3px solid #EBEEEF;
+    
+    /* 패널 모서리 곡면 처리 */
+    border-radius:10px;
+    
+    visibility:hidden;
+    z-index:10;      
+    
+}
+
+/* 모달 헤더 */
+#modal_header {
+	margin:auto;
+	height:50px;
+	display:flex;
+	align-items:center;
+	justify-content: flex-end;
+}
+
+#modal_header_icon {
+	width:50px;
+	float:left;
+	color:#60C5F1; 
+	font-size:1em;
+}
+
+#modal_header_close {
+	width:50px;
+	font-size:1em; 
+	font-weight:bolder;
+}
+
+/* 모달 본문 */
+#modal_body {
+	
+	padding:20px;
+	
+    /* 글꼴색 */
+    color:#000;
+    
+    display:flex;
+    height:710px;
+    overflow-y:auto;
+	
+}

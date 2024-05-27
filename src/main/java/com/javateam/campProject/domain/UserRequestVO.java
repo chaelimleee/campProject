@@ -5,15 +5,18 @@ import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserRequestVO {
 
-	
 	/** 요구사항 아이디 */
 	@Id
 	@Column
@@ -73,4 +76,5 @@ public class UserRequestVO {
 	/** 낚시 가능 여부 */
 	@Column(name="is_fishing")
 	private int isFishing;
+
 }

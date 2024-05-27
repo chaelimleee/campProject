@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.Camp">
+	
+	<select id="selectCamp" parameterType="int" resultType="com.javateam.campProject.domain.CampEntity">
+		SELECT *
+		FROM camp_info_tbl
+		WHERE id = #{Id}
+	</select>
+
+	<select id="selectCampById" parameterType="int" resultType="com.javateam.campProject.domain.CampImgsVO">
+		SELECT *
+		FROM camp_info_tbl c, camp_imgs_tbl3 i
+		WHERE i.id = c.id AND c.id = #{Id}
+	</select>
+
+	<select id="selectCampReviewsPage" parameterType="map" resultType="com.javateam.campProject.domain.CampReviewVO">
+		SELECT *  
+		FROM (SELECT M.*,  
+		             FLOOR((ROWNUM - 1) / 5 + 1) PAGE  
+		      FROM (
+		             SELECT *
+					 FROM camp_review_tbl2
+		             WHERE camp_name = #{campName}
+		           ) M  
+		      )  
+		WHERE PAGE = #{page}
+
+	</select>
+
+	<select id="selectCampReviews" parameterType="String" resultType="com.javateam.campProject.domain.CampReviewVO">
+		SELECT *
+		FROM camp_review_tbl2
+        WHERE camp_name = #{campName} AND predict = 1
+	</select>
+
+	<select id="countCampReviews" parameterType="String" resultType="com.javateam.campProject.domain.CampReviewVO">
+		SELECT count(*)
+		FROM camp_review_tbl2
+		WHERE camp_name = #{campName}
+	</select>
+	
+	<!-- 캠핑장 예약 정보 생성 -->
+	<insert id="insertReservation" parameterType="map">
+		insert into camp_reservation 
+		values(camp_reservation_seq.nextval,#{campId},#{campName},#{email},#{name},#{date},1)
+	</insert>
+
+	<!-- 캠핑장 예약 정보 수정 -->
+	<update id="updateReservation" parameterType="map">
+		update camp_reservation 
+		set reg_date = #{date}, yesno = #{yesno}
+		where id = #{id}
+	</update>
+	
+	<!-- 캠핑장 예약 정보 조회 -->
+	<select id="selectReservation" parameterType="String" resultType="com.javateam.campProject.domain.ReservationVO" >
+		SELECT *
+		FROM camp_reservation
+		WHERE email = #{email}
+	</select>
+
+	<!-- 캠핑장 예약 날짜별 정보 조회 -->
+	<!-- 주의사항!! 전제조건 : NLS 설정 변경 RR/MM/DD → YYYY-MM-DD로 변경!! 0526 leee-->
+	<select id="selectReservationByRegDate" parameterType="map" resultType="com.javateam.campProject.domain.ReservationVO" >
+		SELECT *
+		FROM camp_reservation
+		WHERE email = #{email} 
+		AND to_date(#{regDate},'yyyy-mm-dd') = to_date(sysdate,'yyyy-mm-dd') 
+		AND camp_id = #{campId}  
+	</select>
+
+	<!-- 캠핑장 예약 취소 0526 leee  -->
+	<delete id="deleteReservation" parameterType="int">
+		DELETE camp_reservation
+		WHERE id = #{id}
+	</delete>
+
+</mapper>
+

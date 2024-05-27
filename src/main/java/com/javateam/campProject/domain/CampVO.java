@@ -65,5 +65,6 @@ public class CampVO {
 	private String facilDetail;
 	private String regDate;
 	private String campImg;
+	private String subTitle;
 
 }

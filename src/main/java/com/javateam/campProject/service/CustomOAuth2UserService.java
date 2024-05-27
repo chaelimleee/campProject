@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.javateam.campProject.dao.UserRepository;
 import com.javateam.campProject.domain.OAuthAttributes;
@@ -17,6 +18,7 @@ import com.javateam.campProject.domain.User;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -27,6 +29,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     @SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
+	@Transactional(readOnly = true)
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
     	
         OAuth2UserService delegate = new DefaultOAuth2UserService();        
@@ -56,6 +59,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
 
+    @Transactional
     private User saveOrUpdate(OAuthAttributes attributes) {
     	
         User user = userRepository.findByEmail(attributes.getEmail())
@@ -65,5 +69,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         return userRepository.save(user);
     }
+    
+   //0526 leee
+   @Transactional(readOnly = true)
+   public Optional<User> getUser(String email) {
+	   
+	   return userRepository.findByEmail(email);
+   }
     
 }

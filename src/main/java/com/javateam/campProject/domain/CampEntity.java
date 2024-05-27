@@ -205,4 +205,11 @@ public class CampEntity {
 	@Column(name="reg_date")
 	private String regDate;
 
+	@Column(name="camp_img")
+	private String campImg;
+
+//	0526 leee 부제목 추가. 
+	@Column(name="sub_title")
+	private String subTitle;
+
 }

@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResultVO {
-	
+
 	/** 결과셋 아이디 */
 	@Id
 	@Column
@@ -86,5 +86,25 @@ public class UserResultVO {
 	/** 전체 요구사항 반영율 */
 	@Column(name="satisfaction")
 	private int satisfaction;
+
+	/** 캠프장 도로명 주소 */
+	@Column(name="road_address")
+	private String roadAddress;
+
+	/** 캠프장 지번 주소 */
+	@Column(name="jibun_address")
+	private String jibunAddress;
+
+	/** 캠프장 위도 */
+	@Column(name="latitude")
+	private String latitude;
+
+	/** 캠프장 경도 */
+	@Column(name="longitude")
+	private String longitude;
+
+	/** 캠프장 이미지 */
+	@Column(name="camp_img")
+	private String campImg;
 
 }

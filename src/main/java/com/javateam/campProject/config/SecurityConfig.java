@@ -7,9 +7,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.javateam.campProject.domain.Role;
+import com.javateam.campProject.domain.RoleEnum;
 import com.javateam.campProject.service.CustomOAuth2UserService;
 
 
@@ -22,12 +23,13 @@ public class SecurityConfig {
     
     // security 적용 예외 URL 등록
     // Swagger 페이지 접근에 대한 예외 처리
-//    @Bean
-//    public WebSecurityCustomizer webSecurityCustomizer() {
-//    	
-//    	return (web) -> web.ignoring().antMatchers("/", "/css/**", "/webjars/**", 
-//    				"/images/**", "/js/**", "/profile");
-//    }
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+    	
+    	return (web) -> web.ignoring().requestMatchers("/", "/thumb_sub4_ext/**", "/css/**", "/webjars/**", 
+										"/images/**", "/img/**", "/js/**",
+										"/summernote/**","/jquery/**","/axios/**", "/lib/**","/vendor/**", "/profile");
+    }
 
     @Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,12 +40,38 @@ public class SecurityConfig {
         				.frameOptions(Customizer.withDefaults()).disable());
         
         http.authorizeHttpRequests(authorizeHttpRequestsCustomizer -> 
-        							authorizeHttpRequestsCustomizer
-        								.requestMatchers("/", "/css/**", "/webjars/**","/img/**","/vendor/**",
-    													"/images/**", "/js/**", "/profile").permitAll()
-    									.requestMatchers("/api/v1/**").hasRole(Role.USER.name())
-										// .requestMatchers("/login/oauth2/**").hasRole(Role.USER.name())
-    									.anyRequest().authenticated()); 
+								authorizeHttpRequestsCustomizer
+								//.requestMatchers("/api/v3/**").hasRole(RoleEnum.USER.name())
+								.requestMatchers("/", "/css/**", "/webjars/**","/img/**","/vendor/**",
+										"/images/**", "/js/**", "/lib/**").permitAll()
+								.requestMatchers(
+										"/board/write.do",
+					    				"/board/writeProc.do",
+					    				"/board/update_boardPass.do",
+					    				"/board/update.do", 
+					    				"/board/updateProc.do",
+					    				"/board/deleteProc.do",
+					    				"/board/delete_boardPass.do",
+						        		"/board/view.do/**",
+						        		"/board/list.do",
+						        		"/board/searchList.do",
+						        		"/board/searchList.do/**",
+						                "/board/image", 
+						                "/board/image/**",
+						                "/board/getRepliesAll.do",
+						                "/board/download/**",
+						                "/board/replyWrite.do"        						                
+						        		).permitAll()
+								.requestMatchers(
+										"/member/reservationView.do/**",
+					    				"/reservation.do",
+					                    "/board/replyWrite.do",
+					                    "/board/replyUpdate.do",
+					                    "/board/replyDelete.do",
+					                    "/board/checkLock.do"
+					    				).authenticated()
+								
+								.anyRequest().authenticated());
                 
         http.logout(logoutCustomizer -> logoutCustomizer.logoutSuccessUrl("/"));
             
