@@ -61,8 +61,6 @@
 	
 					let id = e.currentTarget.id.split("_")[2];
 					
-					alert("id 확인:" + id);
-					
 					let email = "[[${#authentication.principal.attributes.email}]]";
 					
 					location.href = `/campProject/reservation_cancel.do?id=${id}&email=${email}`;
